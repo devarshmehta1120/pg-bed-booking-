@@ -123,3 +123,54 @@
     @apply bg-background text-foreground;
     }
 }
+.react-datepicker {
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* Selected range */
+.react-datepicker__day--in-range {
+  background-color: #4ade80 !important;
+  color: white;
+}
+
+/* Start & End */
+.react-datepicker__day--selected {
+  background-color: #22c55e !important;
+  color: white;
+}
+
+/* Disabled (booked) */
+.react-datepicker__day--disabled {
+  background-color: #f87171 !important;
+  color: white !important;
+  cursor: not-allowed;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+
+
+
+/* index.css */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2C4549;
+  border-radius: 10px;
+}

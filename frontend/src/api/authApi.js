@@ -2,18 +2,32 @@ import axios from "axios";
 
 const API = "http://localhost:5000/api/auth";
 
+/* ---------------- HELPER: ERROR HANDLER ---------------- */
+
+const handleError = (error, defaultMessage) => {
+  if (error.response) {
+    // Server responded with a status code
+    return error.response.data || { message: defaultMessage };
+  } else if (error.request) {
+    // Request made but no response (server down / network issue)
+    return { message: "No response from server. Please try again later." };
+  } else {
+    // Something else happened
+    return { message: error.message || defaultMessage };
+  }
+};
+
 
 /* ---------------- REGISTER USER ---------------- */
 
 export const registerUser = async (userData) => {
   try {
     const res = await axios.post(`${API}/register`, userData);
-
     return res.data;
 
   } catch (error) {
     console.error("Register Error:", error);
-    throw error.response?.data || { message: "Registration failed" };
+    throw handleError(error, "Registration failed");
   }
 };
 
@@ -34,7 +48,7 @@ export const loginUser = async (userData) => {
 
   } catch (error) {
     console.error("Login Error:", error);
-    throw error.response?.data || { message: "Login failed" };
+    throw handleError(error, "Login failed");
   }
 };
 
@@ -55,7 +69,7 @@ export const getProfile = async () => {
 
   } catch (error) {
     console.error("Profile Fetch Error:", error);
-    throw error.response?.data || { message: "Failed to fetch profile" };
+    throw handleError(error, "Failed to fetch profile");
   }
 };
 

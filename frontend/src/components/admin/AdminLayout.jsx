@@ -3,6 +3,7 @@ import AdminSidebar from "./Sidebar";
 import AdminNavbar from "./AdminNavbar";
 
 export default function AdminLayout({ children }) {
+  
   return (
     <div className="flex">
 

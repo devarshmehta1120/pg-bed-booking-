@@ -5,13 +5,10 @@ const Booking = require("../models/Booking");
 
 /* ================= GET BEDS BY ROOM ================= */
 
-
 exports.getBedsByRoom = async (req, res) => {
   try {
 
     const { roomId } = req.params;
-
-    /* VALIDATE ROOM ID */
 
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
       return res.status(400).json({
@@ -20,27 +17,19 @@ exports.getBedsByRoom = async (req, res) => {
       });
     }
 
-    /* GET ALL BEDS */
-
     const beds = await Bed.find({ room: roomId })
       .populate("room", "roomNumber pricePerBed");
 
     const today = new Date();
 
-    /* GET ALL ACTIVE BOOKINGS FOR THIS ROOM */
-
     const bookings = await Booking.find({
-      status: { $in: ["paid", "booked"] },
+      bookingStatus: { $in: ["pending", "confirmed"] },
       endDate: { $gte: today }
     }).select("bed");
-
-    /* CREATE SET OF BOOKED BED IDS */
 
     const bookedBedIds = new Set(
       bookings.map(b => b.bed.toString())
     );
-
-    /* ADD BOOKED STATUS */
 
     const bedsWithStatus = beds.map((bed) => {
 
@@ -169,6 +158,55 @@ exports.deleteBed = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while deleting bed"
+    });
+  }
+};
+exports.updateBed = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Bed ID",
+      });
+    }
+
+    const bed = await Bed.findById(id);
+
+    if (!bed) {
+      return res.status(404).json({
+        success: false,
+        message: "Bed not found",
+      });
+    }
+
+    // Update bed number
+    if (req.body.bedNumber) {
+      bed.bedNumber = req.body.bedNumber;
+    }
+
+    // Update image if file uploaded
+    if (req.file) {
+      bed.image = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedBed = await bed.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Bed updated successfully",
+      data: updatedBed,
+    });
+
+  } catch (error) {
+    console.error("Update Bed Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating bed",
+      error: error.message,
     });
   }
 };

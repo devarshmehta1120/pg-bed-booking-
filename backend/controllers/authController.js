@@ -8,10 +8,10 @@ const generateToken = require("../utils/generateToken");
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
 
     // Validate fields
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({
         success: false,
         message: "All fields are required"
@@ -35,7 +35,8 @@ exports.register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      phone
     });
 
     res.status(201).json({
@@ -45,17 +46,25 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        phone: user.phone
       }
     });
 
   } catch (error) {
-
     console.error("Register Error:", error);
+
+    // ✅ Handle duplicate key error (VERY IMPORTANT)
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists"
+      });
+    }
 
     res.status(500).json({
       success: false,
-      message: "Server error during registration"
+      message: error.message || "Server error during registration"
     });
   }
 };
@@ -68,7 +77,6 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate fields
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -76,7 +84,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -86,7 +93,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -96,7 +102,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Login success
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -110,12 +115,11 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("Login Error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server error during login"
+      message: error.message || "Server error during login"
     });
   }
 };
@@ -129,7 +133,6 @@ exports.getProfile = async (req, res) => {
 
     const userId = req.user?.id;
 
-    // Check authentication
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -137,7 +140,6 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    // Validate MongoDB ID
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
@@ -145,7 +147,6 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findById(userId).select("-password");
 
     if (!user) {
@@ -155,19 +156,108 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    // Success response
     res.status(200).json({
       success: true,
       data: user
     });
 
   } catch (error) {
-
     console.error("Get Profile Error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server error while fetching profile"
+      message: error.message || "Server error while fetching profile"
     });
   }
 };
+
+// exports.refreshToken = async (req, res) => {
+//   try {
+//     const { refreshToken } = req.body;
+
+//     // 1. Validate input
+//     if (!refreshToken) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Refresh token is required",
+//       });
+//     }
+
+//     // 2. Check env variables
+//     if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+//       console.error("JWT secrets are not defined in environment variables");
+//       return res.status(500).json({
+//         success: false,
+//         message: "Server configuration error",
+//       });
+//     }
+
+//     let decoded;
+
+//     // 3. Verify refresh token
+//     try {
+//       decoded = jwt.verify(
+//         refreshToken,
+//         process.env.JWT_REFRESH_SECRET
+//       );
+//     } catch (err) {
+//       if (err.name === "TokenExpiredError") {
+//         return res.status(401).json({
+//           success: false,
+//           message: "Refresh token expired",
+//         });
+//       }
+
+//       if (err.name === "JsonWebTokenError") {
+//         return res.status(403).json({
+//           success: false,
+//           message: "Invalid refresh token",
+//         });
+//       }
+
+//       // Unknown JWT error
+//       console.error("JWT verification error:", err);
+//       return res.status(500).json({
+//         success: false,
+//         message: "Token verification failed",
+//       });
+//     }
+
+//     // 4. Validate decoded payload
+//     if (!decoded || !decoded.id) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Invalid token payload",
+//       });
+//     }
+
+//     // 5. Generate new tokens
+//     const newAccessToken = jwt.sign(
+//       { id: decoded.id },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "15m" }
+//     );
+
+//     const newRefreshToken = jwt.sign(
+//       { id: decoded.id },
+//       process.env.JWT_REFRESH_SECRET,
+//       { expiresIn: "7d" }
+//     );
+
+//     // 6. Send response
+//     return res.status(200).json({
+//       success: true,
+//       token: newAccessToken,
+//       refreshToken: newRefreshToken,
+//     });
+
+//   } catch (error) {
+//     // 7. Catch unexpected errors
+//     console.error("Refresh token controller error:", error);
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };

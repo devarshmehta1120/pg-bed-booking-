@@ -226,7 +226,7 @@ exports.getAvailableRooms = async (req, res) => {
     /* ===== FIND BOOKINGS THAT OVERLAP ===== */
 
     const bookings = await Booking.find({
-      status: { $in: ["paid", "booked"] },
+       bookingStatus: { $in: ["pending", "confirmed"] },
       startDate: { $lte: end },
       endDate: { $gte: start }
     }).select("bed");

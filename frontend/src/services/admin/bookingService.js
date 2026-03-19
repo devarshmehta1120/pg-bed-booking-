@@ -48,3 +48,16 @@ export const getBookingById = async (id) => {
     };
   }
 };
+export const refundBookingApi = async (id, token) => {
+  const res = await axios.put(
+    `/refund/${id}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return res.data;
+};

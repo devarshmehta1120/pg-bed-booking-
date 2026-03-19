@@ -1,10 +1,27 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { SidebarProvider } from "../components/ui/sidebar";
 import AdminNavbar from "../components/admin/AdminNavbar";
 import AdminSidebar from "../components/admin/Sidebar";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
+  beforeLoad: () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // Not logged in
+  if (!user) {
+    throw redirect({
+      to: "/login",
+    });
+  }
+
+  // Logged in but not admin
+  if (user.role !== "admin") {
+    throw redirect({
+      to: "/unauthorized",
+    });
+  }
+}
 });
 
 function AdminLayout() {

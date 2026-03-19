@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginUser } from "../api/authApi";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "react-toastify"; // ✅ added
 
 function Login() {
 
@@ -26,16 +27,21 @@ function Login() {
 
     setError("");
 
+    // ✅ Validation
     if (!formData.email || !formData.password) {
-      setError("Email and password are required");
+      const msg = "Email and password are required";
+      setError(msg);
+      toast.error(msg); // 🔥 toast added
       return;
     }
 
     try {
-
       setLoading(true);
 
       const res = await loginUser(formData);
+
+      // ✅ Success toast
+      toast.success("Login successful ✅");
 
       const user = res.user;
 
@@ -48,12 +54,16 @@ function Login() {
 
     } catch (err) {
 
-      setError(err.message || "Login failed");
+      const message =
+        err?.message ||
+        err?.response?.data?.message ||
+        "Login failed";
+
+      setError(message);
+      toast.error(message); // 🔥 toast added
 
     } finally {
-
       setLoading(false);
-
     }
   };
 

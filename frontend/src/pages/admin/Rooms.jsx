@@ -7,8 +7,7 @@ import {
   deleteRoom
 } from "../../services/admin/roomService";
 
- const Rooms = () => {
-
+const Rooms = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -22,7 +21,6 @@ import {
     bedImages: []
   });
 
-  /* HANDLE BED COUNT */
   const handleBedsChange = (e) => {
     const beds = Number(e.target.value);
 
@@ -33,14 +31,10 @@ import {
     });
   };
 
-  /* ================= GET ROOMS ================= */
-
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ["rooms"],
     queryFn: getAllRooms
   });
-
-  /* ================= CREATE ROOM ================= */
 
   const createRoomMutation = useMutation({
     mutationFn: createRoom,
@@ -49,8 +43,6 @@ import {
       setShowModal(false);
     }
   });
-
-  /* ================= DELETE ROOM ================= */
 
   const deleteRoomMutation = useMutation({
     mutationFn: deleteRoom,
@@ -63,17 +55,14 @@ import {
     e.preventDefault();
 
     const formData = new FormData();
-
     formData.append("roomNumber", form.roomNumber);
     formData.append("totalBeds", form.totalBeds);
     formData.append("pricePerBed", form.pricePerBed);
 
-    /* ROOM IMAGES */
     for (let i = 0; i < form.images.length; i++) {
       formData.append("images", form.images[i]);
     }
 
-    /* BED IMAGES */
     for (let i = 0; i < form.bedImages.length; i++) {
       if (form.bedImages[i]) {
         formData.append("bedImages", form.bedImages[i]);
@@ -83,62 +72,52 @@ import {
     createRoomMutation.mutate(formData);
   };
 
-  if (isLoading) return <p>Loading rooms...</p>;
+  if (isLoading) return <p className="p-4">Loading rooms...</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
 
       {/* HEADER */}
-
-      <div className="flex justify-between items-center mb-8">
-
-        <h1 className="text-3xl font-bold">
-          Rooms
-        </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">Rooms</h1>
 
         <button
           onClick={() => setShowModal(true)}
-          className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600"
+          className="bg-green-500 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
         >
           + Add Room
         </button>
-
       </div>
 
       {/* ROOM CARDS */}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
 
         {rooms.map((room) => (
-
           <div
             key={room._id}
             className="bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
           >
-
             {room.images?.length > 0 && (
               <img
                 src={`http://localhost:5000${room.images[0]}`}
-                alt="room"
-                className="w-full h-40 object-cover"
+                className="w-full h-40 sm:h-44 object-cover"
               />
             )}
 
-            <div className="p-6">
-
-              <h2 className="text-xl font-semibold mb-2">
+            <div className="p-4 sm:p-5">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">
                 Room {room.roomNumber}
               </h2>
 
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm">
                 Beds: {room.totalBeds}
               </p>
 
-              <p className="text-gray-600 mb-4">
-                Price: ₹{room.pricePerBed}
+              <p className="text-gray-600 mb-3 text-sm">
+                ₹{room.pricePerBed}
               </p>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
 
                 <button
                   onClick={() =>
@@ -147,39 +126,32 @@ import {
                       params: { roomId: room._id }
                     })
                   }
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                  className="bg-blue-500 text-white px-3 py-2 rounded w-full sm:w-auto"
                 >
                   Beds
                 </button>
 
                 <button
                   onClick={() => deleteRoomMutation.mutate(room._id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
+                  className="bg-red-500 text-white px-3 py-2 rounded w-full sm:w-auto"
                 >
                   Delete
                 </button>
 
               </div>
-
             </div>
-
           </div>
-
         ))}
 
       </div>
 
-      {/* ADD ROOM MODAL */}
-
+      {/* MODAL */}
       {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center px-4 z-50">
 
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white p-5 sm:p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
 
-          <div className="bg-white p-6 rounded-xl w-[400px]">
-
-            <h2 className="text-xl font-semibold mb-4">
-              Create Room
-            </h2>
+            <h2 className="text-xl font-semibold mb-4">Create Room</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -192,8 +164,6 @@ import {
                 }
               />
 
-              {/* TOTAL BEDS INPUT */}
-
               <input
                 type="number"
                 placeholder="Total Beds"
@@ -201,27 +171,19 @@ import {
                 onChange={handleBedsChange}
               />
 
-              {/* BED IMAGE INPUTS */}
-
               {form.totalBeds > 0 && (
                 <div className="space-y-2">
-
                   <p className="font-semibold">Bed Images</p>
 
                   {Array.from({ length: form.totalBeds }).map((_, index) => (
-
-                    <div key={index} className="flex items-center gap-2">
-
-                      <label className="w-20">
-                        Bed {index + 1}
-                      </label>
+                    <div key={index} className="flex flex-col sm:flex-row gap-2">
+                      <label className="sm:w-24">Bed {index + 1}</label>
 
                       <input
                         type="file"
                         accept="image/*"
                         className="border p-1 rounded w-full"
                         onChange={(e) => {
-
                           const newBedImages = [...form.bedImages];
                           newBedImages[index] = e.target.files[0];
 
@@ -229,14 +191,10 @@ import {
                             ...form,
                             bedImages: newBedImages
                           });
-
                         }}
                       />
-
                     </div>
-
                   ))}
-
                 </div>
               )}
 
@@ -249,8 +207,6 @@ import {
                 }
               />
 
-              {/* ROOM IMAGES */}
-
               <input
                 type="file"
                 multiple
@@ -261,19 +217,19 @@ import {
                 }
               />
 
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
 
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="border px-4 py-2 rounded"
+                  className="border px-4 py-2 rounded w-full sm:w-auto"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  className="bg-green-500 text-white px-4 py-2 rounded w-full sm:w-auto"
                 >
                   Create
                 </button>
@@ -283,12 +239,11 @@ import {
             </form>
 
           </div>
-
         </div>
-
       )}
 
     </div>
   );
-}
+};
+
 export default Rooms;

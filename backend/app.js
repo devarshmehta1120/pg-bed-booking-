@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -9,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 app.use(express.json());
@@ -30,6 +32,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/beds", bedRoutes);
 app.use("/api/admin/dashboard", dashboardRoutes);
 app.use("/uploads", express.static("uploads"));
+app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send("PG Booking API Running...");
 });

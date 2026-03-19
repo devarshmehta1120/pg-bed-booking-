@@ -9,29 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as RoomsIndexRouteImport } from './routes/rooms/index'
+import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as RoomsRoomIdRouteImport } from './routes/rooms/$roomId'
-import { Route as BedsBedIdRouteImport } from './routes/beds/$bedId'
+import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminRoomsRouteImport } from './routes/admin/rooms'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminCalenderRouteImport } from './routes/admin/calender'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as LayoutRegisterRouteImport } from './routes/_layout/register'
+import { Route as LayoutProfileRouteImport } from './routes/_layout/profile'
+import { Route as LayoutMybookingRouteImport } from './routes/_layout/mybooking'
+import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
+import { Route as LayoutContactRouteImport } from './routes/_layout/contact'
+import { Route as LayoutAboutRouteImport } from './routes/_layout/about'
+import { Route as LayoutRoomsIndexRouteImport } from './routes/_layout/rooms/index'
 import { Route as AdminRoomsRoomIdRouteImport } from './routes/admin/rooms.$roomId'
 import { Route as AdminBedsRoomIdRouteImport } from './routes/admin/beds/$roomId'
+import { Route as LayoutRoomsRoomIdRouteImport } from './routes/_layout/rooms/$roomId'
+import { Route as LayoutBedsBedIdRouteImport } from './routes/_layout/beds/$bedId'
 
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -39,14 +41,8 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RoomsIndexRoute = RoomsIndexRouteImport.update({
-  id: '/rooms/',
-  path: '/rooms/',
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -54,15 +50,10 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
-  id: '/rooms/$roomId',
-  path: '/rooms/$roomId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BedsBedIdRoute = BedsBedIdRouteImport.update({
-  id: '/beds/$bedId',
-  path: '/beds/$bedId',
-  getParentRoute: () => rootRouteImport,
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
@@ -79,10 +70,50 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCalenderRoute = AdminCalenderRouteImport.update({
+  id: '/calender',
+  path: '/calender',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
   getParentRoute: () => AdminRoute,
+} as any)
+const LayoutRegisterRoute = LayoutRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutProfileRoute = LayoutProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMybookingRoute = LayoutMybookingRouteImport.update({
+  id: '/mybooking',
+  path: '/mybooking',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLoginRoute = LayoutLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutContactRoute = LayoutContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAboutRoute = LayoutAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutRoomsIndexRoute = LayoutRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const AdminRoomsRoomIdRoute = AdminRoomsRoomIdRouteImport.update({
   id: '/$roomId',
@@ -94,129 +125,166 @@ const AdminBedsRoomIdRoute = AdminBedsRoomIdRouteImport.update({
   path: '/beds/$roomId',
   getParentRoute: () => AdminRoute,
 } as any)
+const LayoutRoomsRoomIdRoute = LayoutRoomsRoomIdRouteImport.update({
+  id: '/rooms/$roomId',
+  path: '/rooms/$roomId',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBedsBedIdRoute = LayoutBedsBedIdRouteImport.update({
+  id: '/beds/$bedId',
+  path: '/beds/$bedId',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof LayoutIndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/about': typeof LayoutAboutRoute
+  '/contact': typeof LayoutContactRoute
+  '/login': typeof LayoutLoginRoute
+  '/mybooking': typeof LayoutMybookingRoute
+  '/profile': typeof LayoutProfileRoute
+  '/register': typeof LayoutRegisterRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calender': typeof AdminCalenderRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/rooms': typeof AdminRoomsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
-  '/beds/$bedId': typeof BedsBedIdRoute
-  '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/admin/': typeof AdminIndexRoute
-  '/rooms/': typeof RoomsIndexRoute
+  '/beds/$bedId': typeof LayoutBedsBedIdRoute
+  '/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
   '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
+  '/rooms/': typeof LayoutRoomsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/about': typeof LayoutAboutRoute
+  '/contact': typeof LayoutContactRoute
+  '/login': typeof LayoutLoginRoute
+  '/mybooking': typeof LayoutMybookingRoute
+  '/profile': typeof LayoutProfileRoute
+  '/register': typeof LayoutRegisterRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calender': typeof AdminCalenderRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/rooms': typeof AdminRoomsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
-  '/beds/$bedId': typeof BedsBedIdRoute
-  '/rooms/$roomId': typeof RoomsRoomIdRoute
+  '/': typeof LayoutIndexRoute
   '/admin': typeof AdminIndexRoute
-  '/rooms': typeof RoomsIndexRoute
+  '/beds/$bedId': typeof LayoutBedsBedIdRoute
+  '/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
   '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
+  '/rooms': typeof LayoutRoomsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_layout': typeof LayoutRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/unauthorized': typeof UnauthorizedRoute
+  '/_layout/about': typeof LayoutAboutRoute
+  '/_layout/contact': typeof LayoutContactRoute
+  '/_layout/login': typeof LayoutLoginRoute
+  '/_layout/mybooking': typeof LayoutMybookingRoute
+  '/_layout/profile': typeof LayoutProfileRoute
+  '/_layout/register': typeof LayoutRegisterRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/calender': typeof AdminCalenderRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/rooms': typeof AdminRoomsRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
-  '/beds/$bedId': typeof BedsBedIdRoute
-  '/rooms/$roomId': typeof RoomsRoomIdRoute
+  '/_layout/': typeof LayoutIndexRoute
   '/admin/': typeof AdminIndexRoute
-  '/rooms/': typeof RoomsIndexRoute
+  '/_layout/beds/$bedId': typeof LayoutBedsBedIdRoute
+  '/_layout/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
   '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
+  '/_layout/rooms/': typeof LayoutRoomsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/unauthorized'
+    | '/about'
+    | '/contact'
     | '/login'
+    | '/mybooking'
+    | '/profile'
     | '/register'
     | '/admin/bookings'
+    | '/admin/calender'
     | '/admin/dashboard'
     | '/admin/rooms'
     | '/admin/users'
+    | '/admin/'
     | '/beds/$bedId'
     | '/rooms/$roomId'
-    | '/admin/'
-    | '/rooms/'
     | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
+    | '/rooms/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/unauthorized'
+    | '/about'
+    | '/contact'
     | '/login'
+    | '/mybooking'
+    | '/profile'
     | '/register'
     | '/admin/bookings'
+    | '/admin/calender'
     | '/admin/dashboard'
     | '/admin/rooms'
     | '/admin/users'
+    | '/'
+    | '/admin'
     | '/beds/$bedId'
     | '/rooms/$roomId'
-    | '/admin'
-    | '/rooms'
     | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
+    | '/rooms'
   id:
     | '__root__'
-    | '/'
+    | '/_layout'
     | '/admin'
-    | '/login'
-    | '/register'
+    | '/unauthorized'
+    | '/_layout/about'
+    | '/_layout/contact'
+    | '/_layout/login'
+    | '/_layout/mybooking'
+    | '/_layout/profile'
+    | '/_layout/register'
     | '/admin/bookings'
+    | '/admin/calender'
     | '/admin/dashboard'
     | '/admin/rooms'
     | '/admin/users'
-    | '/beds/$bedId'
-    | '/rooms/$roomId'
+    | '/_layout/'
     | '/admin/'
-    | '/rooms/'
+    | '/_layout/beds/$bedId'
+    | '/_layout/rooms/$roomId'
     | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
+    | '/_layout/rooms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  RegisterRoute: typeof RegisterRoute
-  BedsBedIdRoute: typeof BedsBedIdRoute
-  RoomsRoomIdRoute: typeof RoomsRoomIdRoute
-  RoomsIndexRoute: typeof RoomsIndexRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -226,18 +294,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
+    '/_layout': {
+      id: '/_layout'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rooms/': {
-      id: '/rooms/'
-      path: '/rooms'
-      fullPath: '/rooms/'
-      preLoaderRoute: typeof RoomsIndexRouteImport
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -247,19 +308,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/rooms/$roomId': {
-      id: '/rooms/$roomId'
-      path: '/rooms/$roomId'
-      fullPath: '/rooms/$roomId'
-      preLoaderRoute: typeof RoomsRoomIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/beds/$bedId': {
-      id: '/beds/$bedId'
-      path: '/beds/$bedId'
-      fullPath: '/beds/$bedId'
-      preLoaderRoute: typeof BedsBedIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_layout/': {
+      id: '/_layout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/admin/users': {
       id: '/admin/users'
@@ -282,12 +336,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/calender': {
+      id: '/admin/calender'
+      path: '/calender'
+      fullPath: '/admin/calender'
+      preLoaderRoute: typeof AdminCalenderRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/bookings': {
       id: '/admin/bookings'
       path: '/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/_layout/register': {
+      id: '/_layout/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof LayoutRegisterRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/profile': {
+      id: '/_layout/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof LayoutProfileRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/mybooking': {
+      id: '/_layout/mybooking'
+      path: '/mybooking'
+      fullPath: '/mybooking'
+      preLoaderRoute: typeof LayoutMybookingRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/login': {
+      id: '/_layout/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LayoutLoginRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/contact': {
+      id: '/_layout/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof LayoutContactRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/about': {
+      id: '/_layout/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof LayoutAboutRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/rooms/': {
+      id: '/_layout/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof LayoutRoomsIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/admin/rooms/$roomId': {
       id: '/admin/rooms/$roomId'
@@ -303,8 +413,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBedsRoomIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_layout/rooms/$roomId': {
+      id: '/_layout/rooms/$roomId'
+      path: '/rooms/$roomId'
+      fullPath: '/rooms/$roomId'
+      preLoaderRoute: typeof LayoutRoomsRoomIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/beds/$bedId': {
+      id: '/_layout/beds/$bedId'
+      path: '/beds/$bedId'
+      fullPath: '/beds/$bedId'
+      preLoaderRoute: typeof LayoutBedsBedIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
+
+interface LayoutRouteChildren {
+  LayoutAboutRoute: typeof LayoutAboutRoute
+  LayoutContactRoute: typeof LayoutContactRoute
+  LayoutLoginRoute: typeof LayoutLoginRoute
+  LayoutMybookingRoute: typeof LayoutMybookingRoute
+  LayoutProfileRoute: typeof LayoutProfileRoute
+  LayoutRegisterRoute: typeof LayoutRegisterRoute
+  LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutBedsBedIdRoute: typeof LayoutBedsBedIdRoute
+  LayoutRoomsRoomIdRoute: typeof LayoutRoomsRoomIdRoute
+  LayoutRoomsIndexRoute: typeof LayoutRoomsIndexRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutAboutRoute: LayoutAboutRoute,
+  LayoutContactRoute: LayoutContactRoute,
+  LayoutLoginRoute: LayoutLoginRoute,
+  LayoutMybookingRoute: LayoutMybookingRoute,
+  LayoutProfileRoute: LayoutProfileRoute,
+  LayoutRegisterRoute: LayoutRegisterRoute,
+  LayoutIndexRoute: LayoutIndexRoute,
+  LayoutBedsBedIdRoute: LayoutBedsBedIdRoute,
+  LayoutRoomsRoomIdRoute: LayoutRoomsRoomIdRoute,
+  LayoutRoomsIndexRoute: LayoutRoomsIndexRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface AdminRoomsRouteChildren {
   AdminRoomsRoomIdRoute: typeof AdminRoomsRoomIdRoute
@@ -320,6 +473,7 @@ const AdminRoomsRouteWithChildren = AdminRoomsRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminCalenderRoute: typeof AdminCalenderRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminRoomsRoute: typeof AdminRoomsRouteWithChildren
   AdminUsersRoute: typeof AdminUsersRoute
@@ -329,6 +483,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminCalenderRoute: AdminCalenderRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminRoomsRoute: AdminRoomsRouteWithChildren,
   AdminUsersRoute: AdminUsersRoute,
@@ -339,13 +494,9 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  LayoutRoute: LayoutRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
-  LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
-  BedsBedIdRoute: BedsBedIdRoute,
-  RoomsRoomIdRoute: RoomsRoomIdRoute,
-  RoomsIndexRoute: RoomsIndexRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { registerUser } from "../api/authApi";
 import { useNavigate } from "@tanstack/react-router";
-// import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // ✅ added
+// import { Phone } from "lucide-react";  
 
 function Register() {
-
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    phone: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -20,52 +21,73 @@ function Register() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
+const validatePassword = (password) => {
+  const regex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{4,}$/;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (!password) return "Password is required";
 
-    setError("");
-    setSuccess("");
+  if (!regex.test(password)) {
+    return "Password must be at least 4 characters and include uppercase, lowercase, number & special character";
+  }
 
-    if (!formData.name || !formData.email || !formData.password) {
-      setError("All fields are required");
-      return;
-    }
+  return null;
+};
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
+  setError("");
+  setSuccess("");
 
-      setLoading(true);
+  if (!formData.name || !formData.email || !formData.password || !formData.phone) {
+    const msg = "All fields are required";
+    setError(msg);
+    toast.error(msg);
+    return;
+  }
 
-      const res = await registerUser(formData);
+  // 🔥 Password validation
+  const passwordError = validatePassword(formData.password);
+  if (passwordError) {
+    setError(passwordError);
+    toast.error(passwordError);
+    return;
+  }
 
-      setSuccess("Registration successful! Please login.");
+  try {
+    setLoading(true);
 
-      setTimeout(() => {
-        navigate({ to: "/login" });
-      }, 1500);
+    const res = await registerUser(formData);
 
-    } catch (err) {
+    const msg = "Registration successful! Please login.";
+    setSuccess(msg);
+    toast.success(msg);
 
-      setError(err.message || "Registration failed");
+    setTimeout(() => {
+      navigate({ to: "/login" });
+    }, 1500);
 
-    } finally {
+  } catch (err) {
+    const message =
+      err?.message ||
+      err?.response?.data?.message ||
+      "Registration failed";
 
-      setLoading(false);
+    setError(message);
+    toast.error(message);
 
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Register
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
 
         {error && (
           <div className="bg-red-100 text-red-600 p-2 mb-4 rounded">
@@ -80,7 +102,6 @@ function Register() {
         )}
 
         <form onSubmit={handleSubmit}>
-
           <input
             type="text"
             name="name"
@@ -100,6 +121,15 @@ function Register() {
           />
 
           <input
+            type="text"
+            name="phone"
+            placeholder="Phone Number"
+            value={formData.phone}
+            onChange={handleChange}
+            className="w-full border p-3 mb-3 rounded"
+          />
+
+          <input
             type="password"
             name="password"
             placeholder="Password"
@@ -107,7 +137,11 @@ function Register() {
             onChange={handleChange}
             className="w-full border p-3 mb-4 rounded"
           />
-
+          {formData.password && validatePassword(formData.password) && (
+  <p className="text-red-500 text-sm mb-2">
+    {validatePassword(formData.password)}
+  </p>
+)}
           <button
             type="submit"
             disabled={loading}
@@ -115,7 +149,6 @@ function Register() {
           >
             {loading ? "Registering..." : "Register"}
           </button>
-
         </form>
 
         <p className="text-center mt-4">
@@ -127,9 +160,7 @@ function Register() {
             Login
           </span>
         </p>
-
       </div>
-
     </div>
   );
 }

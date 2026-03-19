@@ -1,315 +1,286 @@
 import { useParams, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { io } from "socket.io-client";
+import { useNavigate } from "@tanstack/react-router";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+import {
+  getBedCalendar,
+  createBooking,
+  verifyPayment,
+} from "../api/bookingApi";
+import { getBedById } from "../api/bedApi";
+
+const socket = io("http://localhost:5000");
+
 function BookBed() {
+  const navigate = useNavigate();
+  const { bedId } = useParams({ strict: false });
+  const { roomId } = useSearch({ strict: false });
 
-  const { bedId } = useParams({ strict:false });
-  const { roomId } = useSearch({ strict:false });
+  const queryClient = useQueryClient();
 
-  const [startDate,setStartDate] = useState(null);
-  const [endDate,setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-  /* ================= GET BED DETAILS ================= */
-
+  /* ---------------- BED DETAILS ---------------- */
   const { data: bed, isLoading } = useQuery({
-    queryKey:["bed",bedId],
-    queryFn:async()=>{
+    queryKey: ["bed", bedId],
+    queryFn: () => getBedById(bedId),
+    enabled: !!bedId,
+  });
 
-      const res = await axios.get(
-        `http://localhost:5000/api/beds/${bedId}`
-      )
+  const pricePerBed = bed?.room?.pricePerBed || 0;
 
-      return res.data.data
-    },
-    enabled:!!bedId
-  })
-
-  const pricePerBed = bed?.room?.pricePerBed || 0
-
-  /* ================= GET BOOKED DATES ================= */
-
+  /* ---------------- CALENDAR ---------------- */
   const { data: bookedDates = [] } = useQuery({
-    queryKey:["calendar",bedId],
-    queryFn:async()=>{
-
-      const res = await axios.get(
-        `http://localhost:5000/api/bookings/calendar/${bedId}`
-      )
-
-      return res.data.data.map((b)=>({
-        start:new Date(b.startDate),
-        end:new Date(b.endDate)
-      }))
+    queryKey: ["calendar", bedId],
+    queryFn: async () => {
+      const data = await getBedCalendar(bedId);
+      return data.map((b) => ({
+        start: new Date(b.startDate),
+        end: new Date(b.endDate),
+      }));
     },
-    enabled:!!bedId
-  })
+    enabled: !!bedId,
+  });
 
-  /* ================= PRICE CALCULATION ================= */
+  /* ---------------- SOCKET AUTO REFRESH ---------------- */
+  useEffect(() => {
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
+      queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+    };
 
+    socket.on("bedBooked", refresh);
+    socket.on("bookingUpdated", refresh);
+
+    return () => {
+      socket.off("bedBooked", refresh);
+      socket.off("bookingUpdated", refresh);
+    };
+  }, [bedId, queryClient]);
+
+  /* ---------------- DISABLED DATES ---------------- */
+  const disabledDates = bookedDates.flatMap((range) => {
+    const dates = [];
+    let current = new Date(range.start);
+
+    while (current < new Date(range.end)) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    return dates;
+  });
+
+  /* ---------------- PRICE ---------------- */
   const calculateDays = () => {
+    if (!startDate || !endDate) return 0;
+    return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  };
 
-    if(!startDate || !endDate) return 0
+  const totalPrice = calculateDays() * pricePerBed;
 
-    return Math.ceil(
-      (endDate-startDate)/(1000*60*60*24)
-    ) + 1
-  }
+  /* ---------------- DATE FORMAT ---------------- */
+  const format = (date, type) => {
+    const d = new Date(date);
 
-  const totalPrice = calculateDays() * pricePerBed
+    if (type === "start") {
+      d.setHours(12, 0, 0, 0); // check-in
+    } else {
+      d.setHours(11, 0, 0, 0); // check-out
+    }
 
-  /* ================= RAZORPAY PAYMENT ================= */
+    return d.toISOString();
+  };
 
-  const openRazorpay = (order,bookingId)=>{
-
+  /* ---------------- RAZORPAY ---------------- */
+  const openRazorpay = (order, bookingId) => {
     const options = {
-
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-
       amount: order.amount,
       currency: order.currency,
       order_id: order.id,
 
-      name:"PG Bed Booking",
-      description:"Bed Reservation",
+      handler: async (response) => {
+        const toastId = toast.loading("Verifying payment...");
 
-      handler: async function(response){
-
-        const token = localStorage.getItem("token")
-
-        await axios.post(
-          "http://localhost:5000/api/bookings/verify-payment",
-          {
+        try {
+          await verifyPayment({
             bookingId,
-            razorpay_order_id:response.razorpay_order_id,
-            razorpay_payment_id:response.razorpay_payment_id,
-            razorpay_signature:response.razorpay_signature
-          },
-          {
-            headers:{
-              Authorization:`Bearer ${token}`
-            }
-          }
-        )
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
 
-        alert("Payment Successful & Booking Confirmed")
+          // ✅ AUTO REFRESH
+          queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+          queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
 
+          toast.update(toastId, {
+            render: "🎉 Booking Confirmed!",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+          });
+
+        } catch (err) {
+          toast.update(toastId, {
+            render: err.message || "Payment failed",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
       },
 
-      theme:{
-        color:"#2563eb"
-      }
-
-    }
-
-    const razor = new window.Razorpay(options)
-    razor.open()
-
-  }
-
-  /* ================= CREATE BOOKING ================= */
-
-  const handleBooking = async()=>{
-
-    try{
-
-      if(!roomId || !bedId){
-        alert("Room or Bed missing")
-        return
-      }
-
-      if(!startDate || !endDate){
-        alert("Select booking dates")
-        return
-      }
-
-      if(totalPrice <= 0){
-        alert("Invalid booking price")
-        return
-      }
-
-      const token = localStorage.getItem("token")
-
-      const formatDate = (date) => {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  const day = String(d.getDate()).padStart(2, "0")
-
-  return `${year}-${month}-${day}`
-}
-
-      const res = await axios.post(
-        "http://localhost:5000/api/bookings/create",
-        {
-          room:roomId,
-          bed:bedId,
-          startDate:formatDate(startDate),
-          endDate:formatDate(endDate),
-          amount:totalPrice
+      modal: {
+        ondismiss: () => {
+          toast.error("Payment cancelled");
         },
-        {
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        }
-      )
+      },
+    };
 
-      const { bookingId, order } = res.data
+    new window.Razorpay(options).open();
+  };
 
-      openRazorpay(order,bookingId)
+  const loadRazorpayScript = () =>
+    new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
 
-    }catch(error){
+  /* ---------------- BOOKING ---------------- */
+  const handleBooking = async () => {
+  try {
+    // ✅ CHECK LOGIN
+    const token = localStorage.getItem("token");
 
-      console.error(error)
-      alert(error.response?.data?.message || "Booking failed")
+    if (!token) {
+      toast.error("Please login to continue");
 
+      // redirect to login with return path
+      navigate({
+        to: "/login",
+        search: {
+          redirect: `/book-bed?bedId=${bedId}&roomId=${roomId}`,
+        },
+      });
+
+      return; // 🚫 STOP BOOKING
     }
 
+    if (!startDate || !endDate) {
+      return toast.error("Select dates first");
+    }
+
+    const razorLoaded = await loadRazorpayScript();
+    if (!razorLoaded) {
+      return toast.error("Razorpay failed to load");
+    }
+
+    const toastId = toast.loading("Creating booking...");
+
+    const res = await createBooking({
+      room: roomId,
+      bed: bedId,
+      startDate: format(startDate, "start"),
+      endDate: format(endDate, "end"),
+      amount: totalPrice,
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
+
+    toast.update(toastId, {
+      render: "Redirecting to payment...",
+      type: "info",
+      isLoading: false,
+      autoClose: 1500,
+    });
+
+    openRazorpay(res.order, res.bookingId);
+
+  } catch (err) {
+    toast.error(err.message || "Booking failed");
   }
+};
 
-  if(isLoading){
-    return <p className="p-6">Loading bed details...</p>
-  }
+  if (isLoading) return <p className="p-6">Loading...</p>;
 
-return (
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
 
-<div className="bg-gray-50 min-h-screen py-10">
+      <h1 className="text-2xl font-bold mb-4">Book Bed</h1>
 
-  <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 px-6">
+      {/* BED INFO */}
+      {bed && (
+        <div className="border rounded-xl p-4 shadow-md mb-6 flex gap-4">
+          <img
+            src={`http://localhost:5000${bed.image}`}
+            alt="bed"
+            className="w-32 h-32 object-cover rounded-lg"
+          />
 
-    {/* LEFT SIDE - BED DETAILS */}
+          <div>
+            <p className="font-semibold text-lg">Bed: {bed.bedNumber}</p>
+            <p>Room: {bed.room?.roomNumber}</p>
+            <p className="text-green-600">
+              ₹{bed.room?.pricePerBed} / day
+            </p>
 
-    <div className="bg-white rounded-xl shadow overflow-hidden">
+            <p className="text-sm text-gray-500">
+              ⏰ Check-in 12 PM | Check-out 11 AM
+            </p>
+          </div>
+        </div>
+      )}
 
-      <img
-        src={`http://localhost:5000${bed?.image}`}
-        className="w-full h-72 object-cover"
+      {/* CALENDAR */}
+      <DatePicker
+        selectsRange
+        startDate={startDate}
+        endDate={endDate}
+        onChange={(update) => {
+          const [start, end] = update;
+          setStartDate(start);
+          setEndDate(end);
+        }}
+        minDate={new Date()}
+        excludeDates={disabledDates}
+        inline
       />
 
-      <div className="p-6">
-
-        <h1 className="text-3xl font-bold text-gray-800">
-          Room {bed?.room?.roomNumber}
-        </h1>
-
-        <p className="text-gray-500 mt-1">
-          Bed {bed?.bedNumber}
+      {/* SELECTED */}
+      {startDate && endDate && (
+        <p className="mt-3 text-green-600">
+          {startDate.toDateString()} → {endDate.toDateString()}
         </p>
+      )}
 
-        <p className="text-blue-600 text-xl font-semibold mt-3">
-          ₹{pricePerBed} / Day
-        </p>
-
-        <p className="text-gray-600 mt-4">
-          Comfortable PG bed with clean environment,
-          WiFi, electricity and security included.
-        </p>
-
+      {/* PRICE */}
+      <div className="mt-4">
+        <p>Days: {calculateDays()}</p>
+        <p className="font-bold text-lg">₹{totalPrice}</p>
       </div>
 
-    </div>
-
-
-    {/* RIGHT SIDE - BOOKING CARD */}
-
-    <div className="bg-white rounded-xl shadow p-6 h-fit sticky top-10">
-
-      <h2 className="text-xl font-semibold mb-6">
-        Book this Bed
-      </h2>
-
-      {/* START DATE */}
-
-      <div className="mb-4">
-
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Start Date
-        </label>
-
-        <DatePicker
-          selected={startDate}
-          onChange={(date)=>setStartDate(date)}
-          excludeDateIntervals={bookedDates}
-          minDate={new Date()}
-          className="border w-full p-3 rounded-md"
-        />
-
-      </div>
-
-
-      {/* END DATE */}
-
-      <div className="mb-4">
-
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          End Date
-        </label>
-
-        <DatePicker
-          selected={endDate}
-          onChange={(date)=>setEndDate(date)}
-          excludeDateIntervals={bookedDates}
-          minDate={startDate || new Date()}
-          className="border w-full p-3 rounded-md"
-        />
-
-      </div>
-
-
-      {/* BOOKING SUMMARY */}
-
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
-
-        <h3 className="font-semibold mb-2">
-          Booking Summary
-        </h3>
-
-        <div className="flex justify-between text-sm text-gray-600">
-
-          <span>Price / Day</span>
-          <span>₹{pricePerBed}</span>
-
-        </div>
-
-        <div className="flex justify-between text-sm text-gray-600 mt-1">
-
-          <span>Days</span>
-          <span>{calculateDays()}</span>
-
-        </div>
-
-        <div className="border-t mt-3 pt-3 flex justify-between font-semibold text-lg">
-
-          <span>Total</span>
-          <span className="text-blue-600">₹{totalPrice}</span>
-
-        </div>
-
-      </div>
-
-
-      {/* PAY BUTTON */}
-
+      {/* BUTTON */}
       <button
         onClick={handleBooking}
         disabled={!startDate || !endDate}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+        className="mt-4 bg-blue-600 text-white px-6 py-2 rounded disabled:bg-gray-400"
       >
         Pay & Book
       </button>
 
     </div>
-
-  </div>
-
-</div>
-
-)
-
+  );
 }
 
-export default BookBed
+export default BookBed;
