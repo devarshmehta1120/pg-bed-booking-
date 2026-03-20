@@ -1,86 +1,71 @@
 import axios from "axios";
 
-const API = `${import.meta.env.VITE_API_URL}/auth`;
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://pg-bed-booking.onrender.com/api";
 
-/* ---------------- HELPER: ERROR HANDLER ---------------- */
+const AUTH_API = `${BASE_URL}/auth`;
+const USER_API = `${BASE_URL}/users`;
 
+/* ---------------- ERROR HANDLER ---------------- */
 const handleError = (error, defaultMessage) => {
   if (error.response) {
-    // Server responded with a status code
     return error.response.data || { message: defaultMessage };
   } else if (error.request) {
-    // Request made but no response (server down / network issue)
     return { message: "No response from server. Please try again later." };
   } else {
-    // Something else happened
     return { message: error.message || defaultMessage };
   }
 };
 
-
-/* ---------------- REGISTER USER ---------------- */
-
+/* ---------------- REGISTER ---------------- */
 export const registerUser = async (userData) => {
   try {
-    const res = await axios.post(`${API}/register`, userData);
+    const res = await axios.post(`${AUTH_API}/register`, userData);
     return res.data;
-
   } catch (error) {
     console.error("Register Error:", error);
     throw handleError(error, "Registration failed");
   }
 };
 
-
-/* ---------------- LOGIN USER ---------------- */
-
+/* ---------------- LOGIN ---------------- */
 export const loginUser = async (userData) => {
   try {
-    const res = await axios.post(`${API}/login`, userData);
+    const res = await axios.post(`${AUTH_API}/login`, userData);
 
     const { token, user } = res.data;
 
-    // Save to localStorage
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
 
     return res.data;
-
   } catch (error) {
     console.error("Login Error:", error);
     throw handleError(error, "Login failed");
   }
 };
 
-
 /* ---------------- GET PROFILE ---------------- */
-
 export const getProfile = async () => {
   try {
     const token = localStorage.getItem("token");
 
-    const res = await axios.get(`${API}/profile`, {
+    const res = await axios.get(`${USER_API}/profile`, {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return res.data;
-
   } catch (error) {
     console.error("Profile Fetch Error:", error);
     throw handleError(error, "Failed to fetch profile");
   }
 };
 
-
 /* ---------------- LOGOUT ---------------- */
-
 export const logoutUser = () => {
-  try {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  } catch (error) {
-    console.error("Logout Error:", error);
-  }
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
 };
