@@ -21,7 +21,7 @@ const seedAdmin = async () => {
     }
 
     // hash password
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("Admin@123", 10);
 
     // create admin
     const admin = await User.create({
