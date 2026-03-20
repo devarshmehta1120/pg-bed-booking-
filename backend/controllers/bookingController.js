@@ -288,7 +288,7 @@ exports.verifyPayment = async (req, res) => {
 
     try {
       // ✅ Generate PDF
-      const pdfPath = await generatePDF(booking);
+      const pdfPath = await generateReceipt(booking);
 
       // ✅ Send Email
       await sendEmail({
