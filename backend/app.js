@@ -13,14 +13,27 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const userRoutes = require("./routes/userRoutes");
 const app = express();
 
-app.use(express.json());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://pg-bed-booking-eony.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    process.env.FRONTEND_URL
-  ],
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
+app.use(express.json());
+
 app.use(
   helmet({
     crossOriginResourcePolicy: false
