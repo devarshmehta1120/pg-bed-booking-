@@ -7,6 +7,19 @@ import AddBedModal from "../../components/admin/admincomponents/AddBedModal";
 
 import { getBedsByRoom, deleteBed as deleteBedApi } from "../../api/bedApi";
 
+/* ================= HELPER FUNCTION ================= */
+const getImageUrl = (img) => {
+  if (!img) return null;
+
+  // Cloudinary or already full URL
+  if (img.startsWith("http")) {
+    return img;
+  }
+
+  // Local storage fallback
+  return `http://localhost:5000${img}`;
+};
+
 function Beds() {
   const { roomId } = useParams({ strict: false });
   const queryClient = useQueryClient();
@@ -34,7 +47,6 @@ function Beds() {
 
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-
         <h1 className="text-xl sm:text-2xl font-bold">Beds</h1>
 
         <button
@@ -43,7 +55,6 @@ function Beds() {
         >
           + Add Bed
         </button>
-
       </div>
 
       {/* ================= MOBILE VIEW ================= */}
@@ -55,7 +66,8 @@ function Beds() {
           >
             {bed.image ? (
               <img
-                src={`http://localhost:5000${bed.image}`}
+                src={getImageUrl(bed.image)}
+                alt="bed"
                 className="w-full h-40 object-cover rounded mb-3"
               />
             ) : (
@@ -104,7 +116,8 @@ function Beds() {
                 <td className="p-3">
                   {bed.image ? (
                     <img
-                      src={`http://localhost:5000${bed.image}`}
+                      src={getImageUrl(bed.image)}
+                      alt="bed"
                       className="w-20 h-14 object-cover rounded"
                     />
                   ) : (

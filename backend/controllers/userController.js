@@ -86,7 +86,6 @@ exports.getProfile = async (req, res) => {
 
 exports.uploadAvatar = async (req, res) => {
   try {
-    // 1. Check if user exists in request (auth middleware)
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
@@ -94,7 +93,6 @@ exports.uploadAvatar = async (req, res) => {
       });
     }
 
-    // 2. Check if file is uploaded
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -102,7 +100,6 @@ exports.uploadAvatar = async (req, res) => {
       });
     }
 
-    // 3. Find user in DB
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -112,12 +109,35 @@ exports.uploadAvatar = async (req, res) => {
       });
     }
 
-    // 4. Update avatar
-    user.avatar = req.file.path;
+    /* ✅ HANDLE STORAGE TYPE */
+    let imageUrl;
 
+    if (process.env.STORAGE_TYPE === "cloud") {
+      imageUrl = req.file.path; // Cloudinary URL
+    } else {
+      imageUrl = `${req.protocol}://${req.get("host")}/${req.file.path}`;
+    }
+
+    /* 🔥 OPTIONAL: delete old avatar from Cloudinary */
+    // (only if using cloud + avatar exists)
+    if (
+      process.env.STORAGE_TYPE === "cloud" &&
+      user.avatar &&
+      user.avatar.includes("cloudinary")
+    ) {
+      try {
+        const publicId = user.avatar.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(
+          `pg-booking/users/${req.user._id}/${publicId}`
+        );
+      } catch (err) {
+        console.log("Old image delete failed:", err.message);
+      }
+    }
+
+    user.avatar = imageUrl;
     await user.save();
 
-    // 5. Success response
     res.status(200).json({
       success: true,
       message: "Avatar uploaded successfully",
@@ -127,7 +147,6 @@ exports.uploadAvatar = async (req, res) => {
   } catch (error) {
     console.error("Upload Error:", error);
 
-    // 6. Handle multer errors specifically
     if (error.name === "MulterError") {
       return res.status(400).json({
         success: false,
@@ -136,7 +155,6 @@ exports.uploadAvatar = async (req, res) => {
       });
     }
 
-    // 7. Handle generic errors
     res.status(500).json({
       success: false,
       message: "Internal server error",

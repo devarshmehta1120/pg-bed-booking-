@@ -2,12 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { getRooms } from "../api/roomApi";
 
+/* ✅ ADD THIS HELPER */
+const getImageUrl = (img) => {
+  if (!img) return "";
+
+  if (img.startsWith("http")) {
+    return img; // Cloudinary
+  }
+
+  return `http://localhost:5000${img}`; // Local
+};
+
 function Rooms() {
   const navigate = useNavigate();
 
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ["rooms"],
-    queryFn: getRooms, // ✅ clean
+    queryFn: getRooms,
   });
 
   if (isLoading) {
@@ -52,7 +63,7 @@ function Rooms() {
               {/* IMAGE */}
               <div className="relative">
                 <img
-                  src={`http://localhost:5000${room.images[0]}`}
+                  src={getImageUrl(room.images?.[0])}
                   className="h-52 w-full object-cover group-hover:scale-105 transition duration-300"
                 />
 

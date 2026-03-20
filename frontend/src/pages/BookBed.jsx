@@ -16,6 +16,17 @@ import { getBedById } from "../api/bedApi";
 
 const socket = io("http://localhost:5000");
 
+/* ✅ ADD THIS HELPER */
+const getImageUrl = (img) => {
+  if (!img) return "";
+
+  if (img.startsWith("http")) {
+    return img; // Cloudinary
+  }
+
+  return `http://localhost:5000${img}`; // Local
+};
+
 function BookBed() {
   const navigate = useNavigate();
   const { bedId } = useParams({ strict: false });
@@ -90,9 +101,9 @@ function BookBed() {
     const d = new Date(date);
 
     if (type === "start") {
-      d.setHours(12, 0, 0, 0); // check-in
+      d.setHours(12, 0, 0, 0);
     } else {
-      d.setHours(11, 0, 0, 0); // check-out
+      d.setHours(11, 0, 0, 0);
     }
 
     return d.toISOString();
@@ -117,7 +128,6 @@ function BookBed() {
             razorpay_signature: response.razorpay_signature,
           });
 
-          // ✅ AUTO REFRESH
           queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
           queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
 
@@ -159,58 +169,56 @@ function BookBed() {
 
   /* ---------------- BOOKING ---------------- */
   const handleBooking = async () => {
-  try {
-    // ✅ CHECK LOGIN
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      toast.error("Please login to continue");
+      if (!token) {
+        toast.error("Please login to continue");
 
-      // redirect to login with return path
-      navigate({
-        to: "/login",
-        search: {
-          redirect: `/book-bed?bedId=${bedId}&roomId=${roomId}`,
-        },
+        navigate({
+          to: "/login",
+          search: {
+            redirect: `/book-bed?bedId=${bedId}&roomId=${roomId}`,
+          },
+        });
+
+        return;
+      }
+
+      if (!startDate || !endDate) {
+        return toast.error("Select dates first");
+      }
+
+      const razorLoaded = await loadRazorpayScript();
+      if (!razorLoaded) {
+        return toast.error("Razorpay failed to load");
+      }
+
+      const toastId = toast.loading("Creating booking...");
+
+      const res = await createBooking({
+        room: roomId,
+        bed: bedId,
+        startDate: format(startDate, "start"),
+        endDate: format(endDate, "end"),
+        amount: totalPrice,
       });
 
-      return; // 🚫 STOP BOOKING
+      queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
+
+      toast.update(toastId, {
+        render: "Redirecting to payment...",
+        type: "info",
+        isLoading: false,
+        autoClose: 1500,
+      });
+
+      openRazorpay(res.order, res.bookingId);
+
+    } catch (err) {
+      toast.error(err.message || "Booking failed");
     }
-
-    if (!startDate || !endDate) {
-      return toast.error("Select dates first");
-    }
-
-    const razorLoaded = await loadRazorpayScript();
-    if (!razorLoaded) {
-      return toast.error("Razorpay failed to load");
-    }
-
-    const toastId = toast.loading("Creating booking...");
-
-    const res = await createBooking({
-      room: roomId,
-      bed: bedId,
-      startDate: format(startDate, "start"),
-      endDate: format(endDate, "end"),
-      amount: totalPrice,
-    });
-
-    queryClient.invalidateQueries({ queryKey: ["calendar", bedId] });
-
-    toast.update(toastId, {
-      render: "Redirecting to payment...",
-      type: "info",
-      isLoading: false,
-      autoClose: 1500,
-    });
-
-    openRazorpay(res.order, res.bookingId);
-
-  } catch (err) {
-    toast.error(err.message || "Booking failed");
-  }
-};
+  };
 
   if (isLoading) return <p className="p-6">Loading...</p>;
 
@@ -223,7 +231,7 @@ function BookBed() {
       {bed && (
         <div className="border rounded-xl p-4 shadow-md mb-6 flex gap-4">
           <img
-            src={`http://localhost:5000${bed.image}`}
+            src={getImageUrl(bed.image)}
             alt="bed"
             className="w-32 h-32 object-cover rounded-lg"
           />
@@ -242,7 +250,6 @@ function BookBed() {
         </div>
       )}
 
-      {/* CALENDAR */}
       <DatePicker
         selectsRange
         startDate={startDate}
@@ -257,20 +264,17 @@ function BookBed() {
         inline
       />
 
-      {/* SELECTED */}
       {startDate && endDate && (
         <p className="mt-3 text-green-600">
           {startDate.toDateString()} → {endDate.toDateString()}
         </p>
       )}
 
-      {/* PRICE */}
       <div className="mt-4">
         <p>Days: {calculateDays()}</p>
         <p className="font-bold text-lg">₹{totalPrice}</p>
       </div>
 
-      {/* BUTTON */}
       <button
         onClick={handleBooking}
         disabled={!startDate || !endDate}

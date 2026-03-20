@@ -4,9 +4,7 @@ const fs = require("fs");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 
-/* ================= CONFIG ================= */
-
-const useCloudinary = process.env.STORAGE_TYPE === "cloud"; // "local" or "cloud"
+const useCloudinary = process.env.STORAGE_TYPE === "cloud";
 
 /* ================= LOCAL STORAGE ================= */
 
@@ -20,7 +18,6 @@ const localStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
-
   filename: (req, file, cb) => {
     const uniqueName =
       Date.now() +
@@ -37,7 +34,6 @@ const localStorage = multer.diskStorage({
 const cloudStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-
     const allowedFormats = ["jpg", "jpeg", "png", "webp"];
     const ext = file.mimetype.split("/")[1];
 
@@ -47,14 +43,10 @@ const cloudStorage = new CloudinaryStorage({
 
     return {
       folder: `pg-booking/users/${req.user?._id || "guest"}`,
-
       public_id: `user-${Date.now()}`,
-
+      resource_type: "image",
       format: ext,
-
-      transformation: [
-        { width: 500, height: 500, crop: "limit" }
-      ]
+      transformation: [{ width: 500, height: 500, crop: "limit" }],
     };
   },
 });
@@ -62,7 +54,6 @@ const cloudStorage = new CloudinaryStorage({
 /* ================= FILE FILTER ================= */
 
 const fileFilter = (req, file, cb) => {
-
   const allowedTypes = /jpeg|jpg|png|webp/;
 
   const extName = allowedTypes.test(
@@ -74,7 +65,7 @@ const fileFilter = (req, file, cb) => {
   if (extName && mimeType) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files (jpeg, jpg, png, webp) allowed"));
+    cb(new Error("Only image files allowed"));
   }
 };
 
@@ -82,11 +73,9 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
   storage: useCloudinary ? cloudStorage : localStorage,
-
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024,
   },
-
   fileFilter,
 });
 

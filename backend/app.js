@@ -11,6 +11,7 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const userRoutes = require("./routes/userRoutes");
+const uploadRoutes = require("./routes/upload");
 const app = express();
 
 
@@ -49,6 +50,10 @@ app.use("/api/beds", bedRoutes);
 app.use("/api/admin/dashboard", dashboardRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/users", userRoutes);
+// serve local uploads (only for local mode)
+app.use("/uploads", express.static("uploads"));
+
+app.use("/api/upload", uploadRoutes);
 app.get("/", (req, res) => {
   res.send("PG Booking API Running...");
 });

@@ -7,6 +7,19 @@ import {
   deleteRoom
 } from "../../services/admin/roomService";
 
+/* ✅ ADD THIS */
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const getImageUrl = (img) => {
+  if (!img) return "";
+
+  if (img.startsWith("http")) {
+    return img; // Cloudinary
+  }
+
+  return `${BASE_URL}${img}`; // Local
+};
+
 const Rooms = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -99,7 +112,7 @@ const Rooms = () => {
           >
             {room.images?.length > 0 && (
               <img
-                src={`http://localhost:5000${room.images[0]}`}
+                src={getImageUrl(room.images[0])}
                 className="w-full h-40 sm:h-44 object-cover"
               />
             )}

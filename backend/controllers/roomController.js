@@ -4,9 +4,7 @@ const Booking = require("../models/Booking");
 /* ================= CREATE ROOM ================= */
 
 exports.createRoom = async (req, res) => {
-
   try {
-
     const { roomNumber, totalBeds, pricePerBed } = req.body;
 
     if (!roomNumber || !totalBeds || !pricePerBed) {
@@ -28,7 +26,11 @@ exports.createRoom = async (req, res) => {
     /* ================= GET IMAGES ================= */
 
     const images =
-  req.files?.images?.map(file => `/uploads/${file.filename}`) || [];
+      req.files?.images?.map(file =>
+        process.env.STORAGE_TYPE === "cloud"
+          ? file.path
+          : `${req.protocol}://${req.get("host")}/${file.path}`
+      ) || [];
 
     const room = await Room.create({
       roomNumber,
@@ -38,29 +40,31 @@ exports.createRoom = async (req, res) => {
     });
 
     /* ===== AUTO CREATE BEDS ===== */
-const bedImages =
-  req.files?.bedImages?.map(file => `/uploads/${file.filename}`) || [];
 
-  const beds = [];
+    const bedImages =
+      req.files?.bedImages?.map(file =>
+        process.env.STORAGE_TYPE === "cloud"
+          ? file.path
+          : `${req.protocol}://${req.get("host")}/${file.path}`
+      ) || [];
 
+    const beds = [];
 
-for (let i = 1; i <= totalBeds; i++) {
+    for (let i = 1; i <= totalBeds; i++) {
+      let imagePath = null;
 
-  let imagePath = null;
+      if (bedImages[i - 1]) {
+        imagePath = bedImages[i - 1];
+      }
 
-  if (bedImages[i - 1]) {
-    imagePath = bedImages[i - 1];   // ✅ already correct path
-  }
+      beds.push({
+        room: room._id,
+        bedNumber: `Bed-${i}`,
+        image: imagePath
+      });
+    }
 
-  beds.push({
-    room: room._id,
-    bedNumber: `Bed-${i}`,
-    image: imagePath
-  });
-
-}
-
-await Bed.insertMany(beds);
+    await Bed.insertMany(beds);
 
     res.status(201).json({
       success: true,
@@ -69,14 +73,12 @@ await Bed.insertMany(beds);
     });
 
   } catch (error) {
-
     console.error("Create Room Error:", error);
 
     res.status(500).json({
       success: false,
       message: "Server error while creating room"
     });
-
   }
 };
 // GET ALL ROOMS

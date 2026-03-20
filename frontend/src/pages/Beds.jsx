@@ -2,8 +2,19 @@ import { useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { getBedsByRoom } from "../api/bedApi"; // ✅ use API layer
+import { getBedsByRoom } from "../api/bedApi";
 import { socket } from "../instance/soceket";
+
+/* ✅ ADD THIS HELPER */
+const getImageUrl = (img) => {
+  if (!img) return "";
+
+  if (img.startsWith("http")) {
+    return img; // Cloudinary
+  }
+
+  return `http://localhost:5000${img}`; // Local
+};
 
 function Beds() {
   const { roomId } = useParams({ strict: false });
@@ -13,8 +24,8 @@ function Beds() {
   /* ---------------- FETCH BEDS ---------------- */
   const { data: beds = [], isLoading } = useQuery({
     queryKey: ["beds", roomId],
-    queryFn: () => getBedsByRoom(roomId), // ✅ no axios here
-    enabled: !!roomId, // ✅ safe fetch
+    queryFn: () => getBedsByRoom(roomId),
+    enabled: !!roomId,
   });
 
   /* ---------------- SOCKET UPDATE ---------------- */
@@ -80,16 +91,9 @@ function Beds() {
                 {/* IMAGE */}
                 <div className="relative">
                   <img
-                    src={`http://localhost:5000${bed.image}`}
+                    src={getImageUrl(bed.image)}
                     className="h-32 w-full object-cover group-hover:scale-105 transition duration-300"
                   />
-
-                  {/* STATUS BADGE */}
-                  {/* {!bed.isAvailable && (
-                    <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                      Booked
-                    </span>
-                  )} */}
                 </div>
 
                 {/* INFO */}
