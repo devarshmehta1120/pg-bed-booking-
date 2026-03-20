@@ -27,7 +27,7 @@ import { Route as LayoutContactRouteImport } from './routes/_layout/contact'
 import { Route as LayoutAboutRouteImport } from './routes/_layout/about'
 import { Route as LayoutRoomsIndexRouteImport } from './routes/_layout/rooms/index'
 import { Route as AdminRoomsRoomIdRouteImport } from './routes/admin/rooms.$roomId'
-import { Route as AdminBedsRoomIdRouteImport } from './routes/admin/Beds/$roomId'
+import { Route as AdminBedsRoomIdRouteImport } from './routes/admin/beds/$roomId'
 import { Route as LayoutRoomsRoomIdRouteImport } from './routes/_layout/rooms/$roomId'
 import { Route as LayoutBedsBedIdRouteImport } from './routes/_layout/beds/$bedId'
 
@@ -121,8 +121,8 @@ const AdminRoomsRoomIdRoute = AdminRoomsRoomIdRouteImport.update({
   getParentRoute: () => AdminRoomsRoute,
 } as any)
 const AdminBedsRoomIdRoute = AdminBedsRoomIdRouteImport.update({
-  id: '/Beds/$roomId',
-  path: '/Beds/$roomId',
+  id: '/beds/$roomId',
+  path: '/beds/$roomId',
   getParentRoute: () => AdminRoute,
 } as any)
 const LayoutRoomsRoomIdRoute = LayoutRoomsRoomIdRouteImport.update({
@@ -154,7 +154,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/beds/$bedId': typeof LayoutBedsBedIdRoute
   '/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
-  '/admin/Beds/$roomId': typeof AdminBedsRoomIdRoute
+  '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
   '/rooms/': typeof LayoutRoomsIndexRoute
 }
@@ -175,7 +175,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/beds/$bedId': typeof LayoutBedsBedIdRoute
   '/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
-  '/admin/Beds/$roomId': typeof AdminBedsRoomIdRoute
+  '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
   '/rooms': typeof LayoutRoomsIndexRoute
 }
@@ -199,7 +199,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/_layout/beds/$bedId': typeof LayoutBedsBedIdRoute
   '/_layout/rooms/$roomId': typeof LayoutRoomsRoomIdRoute
-  '/admin/Beds/$roomId': typeof AdminBedsRoomIdRoute
+  '/admin/beds/$roomId': typeof AdminBedsRoomIdRoute
   '/admin/rooms/$roomId': typeof AdminRoomsRoomIdRoute
   '/_layout/rooms/': typeof LayoutRoomsIndexRoute
 }
@@ -223,7 +223,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/beds/$bedId'
     | '/rooms/$roomId'
-    | '/admin/Beds/$roomId'
+    | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
     | '/rooms/'
   fileRoutesByTo: FileRoutesByTo
@@ -244,7 +244,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/beds/$bedId'
     | '/rooms/$roomId'
-    | '/admin/Beds/$roomId'
+    | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
     | '/rooms'
   id:
@@ -267,7 +267,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/_layout/beds/$bedId'
     | '/_layout/rooms/$roomId'
-    | '/admin/Beds/$roomId'
+    | '/admin/beds/$roomId'
     | '/admin/rooms/$roomId'
     | '/_layout/rooms/'
   fileRoutesById: FileRoutesById
@@ -406,10 +406,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRoomsRoomIdRouteImport
       parentRoute: typeof AdminRoomsRoute
     }
-    '/admin/Beds/$roomId': {
-      id: '/admin/Beds/$roomId'
-      path: '/Beds/$roomId'
-      fullPath: '/admin/Beds/$roomId'
+    '/admin/beds/$roomId': {
+      id: '/admin/beds/$roomId'
+      path: '/beds/$roomId'
+      fullPath: '/admin/beds/$roomId'
       preLoaderRoute: typeof AdminBedsRoomIdRouteImport
       parentRoute: typeof AdminRoute
     }
