@@ -11,14 +11,7 @@ import {
 } from "../api/userApi";
 
 import { getMyBookings } from "../api/bookingApi";
-import { Eye, EyeOff } from "lucide-react";
-import {
-  User,
-  Edit,
-  LogOut,
-  Lock,
-  Camera,
-} from "lucide-react";
+import { Eye, EyeOff, User, Edit, LogOut, Lock, Camera } from "lucide-react";
 
 function Profile() {
   const queryClient = useQueryClient();
@@ -29,7 +22,20 @@ function Profile() {
 
   const [otpMode, setOtpMode] = useState(false);
   const [otp, setOtp] = useState("");
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+const getImageUrl = (img) => {
+  if (!img) return "";
+
+  // ✅ Cloudinary / external URL
+  if (img.startsWith("http")) {
+    return img;
+  }
+
+  // ✅ Local backend image
+  return `${import.meta.env.VITE_BASE_URL || "http://localhost:5000"}${img}`;
+};
+
   /* ---------------- PROFILE ---------------- */
   const { data: user, isLoading } = useQuery({
     queryKey: ["profile"],
@@ -47,31 +53,24 @@ const [showPassword, setShowPassword] = useState(false);
   });
 
   const total = bookings.length;
-  const cancelled = bookings.filter(b => b.bookingStatus === "cancelled").length;
-  const refunded = bookings.filter(b => b.paymentStatus === "refunded").length;
+  const cancelled = bookings.filter(
+    (b) => b.bookingStatus === "cancelled"
+  ).length;
+  const refunded = bookings.filter(
+    (b) => b.paymentStatus === "refunded"
+  ).length;
 
+  /* ---------------- PASSWORD VALIDATION ---------------- */
   const validatePassword = (password) => {
-  const regex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
 
-  if (!password) return "Password is required";
-  if (!regex.test(password)) {
-    return "Password must be at least 6 characters and include uppercase, lowercase, number & special character";
-  }
-  return null;
-};
-// const validatePassword = (password) => {
-//   const regex =
-//     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-
-//   if (!password) return "Password is required";
-
-//   if (!regex.test(password)) {
-//     return "Password must be at least 8 characters and include uppercase, lowercase, number & special character";
-//   }
-
-//   return null;
-// };
+    if (!password) return "Password is required";
+    if (!regex.test(password)) {
+      return "Password must include uppercase, lowercase, number & special character";
+    }
+    return null;
+  };
 
   /* ---------------- UPDATE PROFILE ---------------- */
   const handleUpdateProfile = async () => {
@@ -87,51 +86,40 @@ const [showPassword, setShowPassword] = useState(false);
 
   /* ---------------- PASSWORD FLOW ---------------- */
   const handleSendOtp = async () => {
-  const error = validatePassword(passwords.newPassword);
+    const error = validatePassword(passwords.newPassword);
+    if (error) return toast.error(error);
 
-  if (error) {
-    toast.error(error);
-    return;
-  }
-
-  try {
-    await requestPasswordChange();
-    toast.success("OTP sent to your email");
-    setOtpMode(true);
-  } catch (err) {
-    toast.error(err.message || "Failed to send OTP");
-  }
-};
+    try {
+      await requestPasswordChange();
+      toast.success("OTP sent");
+      setOtpMode(true);
+    } catch (err) {
+      toast.error(err.message || "Failed to send OTP");
+    }
+  };
 
   const handleVerifyOtp = async () => {
-  const error = validatePassword(passwords.newPassword);
+    const error = validatePassword(passwords.newPassword);
+    if (error) return toast.error(error);
 
-  if (error) {
-    toast.error(error);
-    return;
-  }
+    if (!otp || otp.length !== 6) {
+      return toast.error("Enter valid OTP");
+    }
 
-  if (!otp || otp.length !== 6) {
-    toast.error("Enter valid 6-digit OTP");
-    return;
-  }
+    try {
+      await verifyPasswordChange({
+        otp,
+        newPassword: passwords.newPassword,
+      });
 
-  try {
-    await verifyPasswordChange({
-      otp,
-      newPassword: passwords.newPassword,
-    });
-
-    toast.success("Password updated successfully");
-
-    setOtpMode(false);
-    setOtp("");
-    setPasswords({ newPassword: "" });
-
-  } catch (err) {
-    toast.error(err.message || "Invalid OTP");
-  }
-};
+      toast.success("Password updated");
+      setOtpMode(false);
+      setOtp("");
+      setPasswords({ newPassword: "" });
+    } catch (err) {
+      toast.error(err.message || "Invalid OTP");
+    }
+  };
 
   /* ---------------- IMAGE UPLOAD ---------------- */
   const handleImageUpload = async (e) => {
@@ -151,7 +139,6 @@ const [showPassword, setShowPassword] = useState(false);
       });
 
       queryClient.invalidateQueries(["profile"]);
-
     } catch {
       toast.update(toastId, {
         render: "Upload failed",
@@ -171,7 +158,6 @@ const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-
       <h1 className="text-3xl font-bold mb-6">My Profile</h1>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -180,11 +166,13 @@ const [showPassword, setShowPassword] = useState(false);
         <div className="bg-white p-6 rounded-2xl shadow border text-center">
 
           <div className="relative w-24 h-24 mx-auto mb-4">
+
+            {/* ✅ FIXED IMAGE (Cloudinary) */}
             {user?.avatar ? (
               <img
-                src={`http://localhost:5000/${user.avatar.replace(/\\/g, "/")}`}
-                className="w-full h-full rounded-full object-cover"
-              />
+  src={getImageUrl(user.avatar)}
+  className="w-full h-full rounded-full object-cover"
+/>
             ) : (
               <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
                 <User size={40} />
@@ -256,67 +244,55 @@ const [showPassword, setShowPassword] = useState(false);
 
           {/* PASSWORD */}
           <div className="bg-white p-6 rounded-2xl shadow border">
-  <h2 className="font-semibold mb-3 flex gap-2">
-    <Lock size={18} /> Change Password
-  </h2>
+            <h2 className="font-semibold mb-3 flex gap-2">
+              <Lock size={18} /> Change Password
+            </h2>
 
-  {/* 🔐 Password Input with Show/Hide */}
-  <div className="relative mb-2">
-    <input
-      type={showPassword ? "text" : "password"}
-      placeholder="New Password"
-      value={passwords.newPassword}
-      onChange={(e) =>
-        setPasswords({ newPassword: e.target.value })
-      }
-      className="w-full border px-4 py-2 rounded pr-10"
-    />
+            <div className="relative mb-2">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={passwords.newPassword}
+                onChange={(e) =>
+                  setPasswords({ newPassword: e.target.value })
+                }
+                className="w-full border px-4 py-2 rounded pr-10"
+              />
 
-    <span
-      onClick={() => setShowPassword(!showPassword)}
-      className="absolute right-3 top-2.5 cursor-pointer text-gray-600"
-    >
-      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-    </span>
-  </div>
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </span>
+            </div>
 
-  {/* 🔴 Password Validation */}
-  {passwords.newPassword && validatePassword(passwords.newPassword) && (
-    <p className="text-red-500 text-sm mb-2">
-      {validatePassword(passwords.newPassword)}
-    </p>
-  )}
+            {!otpMode ? (
+              <button
+                onClick={handleSendOtp}
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+              >
+                Send OTP
+              </button>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full border px-4 py-2 rounded mt-3 mb-2"
+                />
 
-  {/* 📩 SEND OTP */}
-  {!otpMode && (
-    <button
-      onClick={handleSendOtp}
-      className="bg-blue-600 text-white px-4 py-2 rounded w-full"
-    >
-      Send OTP
-    </button>
-  )}
-
-  {/* 🔢 OTP SECTION */}
-  {otpMode && (
-    <>
-      <input
-        type="text"
-        placeholder="Enter OTP"
-        value={otp}
-        onChange={(e) => setOtp(e.target.value)}
-        className="w-full border px-4 py-2 rounded mt-3 mb-2"
-      />
-
-      <button
-        onClick={handleVerifyOtp}
-        className="bg-green-600 text-white px-4 py-2 rounded w-full"
-      >
-        Verify & Update Password
-      </button>
-    </>
-  )}
-</div>
+                <button
+                  onClick={handleVerifyOtp}
+                  className="bg-green-600 text-white px-4 py-2 rounded w-full"
+                >
+                  Verify & Update Password
+                </button>
+              </>
+            )}
+          </div>
 
           {/* STATS */}
           <div className="grid grid-cols-3 gap-4">

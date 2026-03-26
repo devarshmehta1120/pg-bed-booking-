@@ -11,7 +11,17 @@ function Navbar() {
     queryKey: ["profile"],
     queryFn: getProfile,
   });
+const getImageUrl = (img) => {
+  if (!img) return "";
 
+  // Cloudinary / external URL
+  if (img.startsWith("http")) {
+    return img;
+  }
+
+  // Local image fallback
+  return `${import.meta.env.VITE_BASE_URL || "http://localhost:5000"}${img}`;
+};
   const isAdmin = user?.role === "admin";
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -72,17 +82,17 @@ function Navbar() {
                 className="flex items-center gap-2"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-white">
-                  {user?.avatar ? (
-                    <img
-                      src={`http://localhost:5000/${user.avatar.replace(/\\/g, "/")}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#2C4549] font-bold">
-                      {user?.name?.charAt(0)}
-                    </div>
-                  )}
-                </div>
+  {user?.avatar ? (
+    <img
+      src={getImageUrl(user.avatar)}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-[#2C4549] font-bold">
+      {user?.name?.charAt(0)}
+    </div>
+  )}
+</div>
 
                 <span className="hidden md:block text-sm">
                   {user?.name}
