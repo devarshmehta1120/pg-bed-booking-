@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Gallery from "../components/common/gallery";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 /* ✅ ADD THIS HELPER */
 const getImageUrl = (img) => {
