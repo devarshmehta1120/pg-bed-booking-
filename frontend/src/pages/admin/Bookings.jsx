@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllBookings } from "../../services/admin/bookingService";
+import { getAllBookings } from "../../api/bookingApi";
+// import { getAllBookings } from "../../services/admin/bookingService";
 
 const Bookings = () => {
   const [search, setSearch] = useState("");

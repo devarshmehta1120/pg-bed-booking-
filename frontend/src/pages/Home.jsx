@@ -5,14 +5,15 @@ import "swiper/css";
 import "swiper/css/pagination";
 
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  getAllRooms,
-  searchAvailableRooms,
-} from "../services/admin/roomService";
+// import {
+//   getAllRooms,
+//   searchAvailableRooms,
+// } from "../services/admin/roomService";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Gallery from "../components/common/gallery";
+import { getRooms, searchAvailableRooms } from "../api/roomApi";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
@@ -56,7 +57,7 @@ function Home() {
     isError: roomsError,
   } = useQuery({
     queryKey: ["rooms"],
-    queryFn: getAllRooms,
+    queryFn: getRooms,
   });
 
   useEffect(() => {

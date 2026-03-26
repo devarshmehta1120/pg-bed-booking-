@@ -1,11 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  getAllRooms,
-  createRoom,
-  deleteRoom
-} from "../../services/admin/roomService";
+import { createRoom, deleteRoom, getRooms } from "../../api/roomApi";
+
 
 /* ✅ ADD THIS */
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -46,7 +43,7 @@ const Rooms = () => {
 
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ["rooms"],
-    queryFn: getAllRooms
+    queryFn: getRooms,
   });
 
   const createRoomMutation = useMutation({
