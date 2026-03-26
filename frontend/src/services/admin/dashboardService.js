@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/admin/dashboard/stats";
-
+// const API = "http://localhost:5000/api/admin/dashboard/stats";
+const API = import.meta.env.VITE_API_URL + "/admin/dashboard/stats";
 export const getDashboardStats = async () => {
   try {
     const token = localStorage.getItem("token");

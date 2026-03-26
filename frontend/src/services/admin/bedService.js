@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/beds";
+const API = import.meta.env.VITE_API_URL + "/beds";
+
 
 // export const updateBedImage = async (bedId, file) => {
 

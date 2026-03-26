@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API = "http://localhost:5000/api/rooms";
+// const API = "http://localhost:5000/api/rooms";
+
+const API = import.meta.env.VITE_API_URL + "/rooms";
 
 export const getAllRooms = async () => {
   try {
