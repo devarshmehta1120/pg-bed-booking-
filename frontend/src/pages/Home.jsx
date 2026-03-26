@@ -32,7 +32,8 @@ function Home() {
   const [endDate, setEndDate] = useState("");
   const isFiltering = startDate && endDate;
   const navigate = useNavigate();
-
+console.log("ENV API:", import.meta.env.VITE_API_URL);
+console.log("ENV BASE:", import.meta.env.VITE_BASE_URL);
   /* SEARCH */
   const {
     data: beds = [],
