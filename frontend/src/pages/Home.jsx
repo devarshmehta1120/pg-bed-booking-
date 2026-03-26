@@ -42,7 +42,8 @@ function Home() {
   } = useQuery({
     queryKey: ["availableBeds", startDate, endDate],
     queryFn: () => searchAvailableRooms(startDate, endDate),
-    enabled: false,
+    enabled: !!startDate && !!endDate,
+    // enabled: false,
   });
 
   /* ROOMS */
