@@ -14,7 +14,7 @@ const Bookings = () => {
     queryKey: ["admin-bookings"],
     queryFn: async () => {
       const res = await getAllBookings();
-      return res.data || [];
+      return res
     },
   });
 
